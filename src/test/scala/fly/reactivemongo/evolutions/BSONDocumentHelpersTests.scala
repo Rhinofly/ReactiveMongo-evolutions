@@ -6,8 +6,8 @@ import reactivemongo.bson.BSONDocument
 object BSONDocumentHelpersTests extends Specification {
 
   implicit class BSONDocumentTestEnhancements(doc: BSONDocument) {
-	  def ===(other:BSONDocument) = 
-	    doc.stream.map(_.get) must containAllOf(other.stream.map(_.get))
+    def ===(other: BSONDocument) =
+      doc.stream.map(_.get) must containAllOf(other.stream.map(_.get))
   }
 
   "BSONDocumentHelpers" should {
@@ -45,23 +45,17 @@ object BSONDocumentHelpersTests extends Specification {
       }
 
       "easy access of required fields" in {
-    	  
-    	  "when they exist" in {
-    	    doc1[Int]("one") === 1
-    	  }
-        
-    	  "when they don't exist, throw an Exception" in {
-    	    doc1[Int]("two") must throwA[KeyNotFoundException].like {
-    	      case KeyNotFoundException(key) => key === "two"
-    	    }
-    	  }
-      }
-      
-      "move keys" in {
-        //doc move ("bla" -> "other.bla")
-        todo
-      }
 
+        "when they exist" in {
+          doc1[Int]("one") === 1
+        }
+
+        "when they don't exist, throw an Exception" in {
+          doc1[Int]("two") must throwA[KeyNotFoundException].like {
+            case KeyNotFoundException(key) => key === "two"
+          }
+        }
+      }
     }
   }
 

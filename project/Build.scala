@@ -5,7 +5,7 @@ import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 object Build extends Build {
 
   val libraryName = "ReactiveMongo-evolutions"
-  val libraryVersion = "1.0.0"
+  val libraryVersion = "1.0.0-SNAPSHOT"
 
   val appDependencies = Seq(
     "org.reactivemongo" %% "reactivemongo" % "0.9",
