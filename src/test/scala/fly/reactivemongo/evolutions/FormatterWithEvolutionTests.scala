@@ -46,7 +46,7 @@ object FormatterWithEvolutionTests extends Specification {
     }
 
     "throw an error if the version is not present in the evolution list" in {
-      
+
       val formatter = FormatterWithEvolution[Test2](
         formatter2.from,
         formatter2.to,
@@ -68,7 +68,7 @@ object FormatterWithEvolutionTests extends Specification {
   lazy val formatter =
     FormatterWithEvolution[Test](
       from = { doc =>
-        Test(doc.getAs[String]("name").getOrElse("<noname>"))
+        Test(doc.getAs[String]("name").get)
       },
       to = { test =>
         BSONDocument("name" -> test.name)
@@ -96,24 +96,19 @@ object FormatterWithEvolutionTests extends Specification {
   val testDocument0 = BSONDocument("_version" -> 0, "name" -> "test")
   val testDocument1 = BSONDocument("_version" -> 1, "title" -> "test", "one" -> 1)
 
+  import BSONDocumentHelpers._
+
   val evolution1 =
     Evolution(1) { doc =>
-      val name = doc.get("name").get
-
-      val filteredElements =
-        doc.stream.filter {
-          case Success((key, value)) => key != "name"
-          case _ => true
-        }
-
-      BSONDocument(filteredElements)
+      doc
+        .rename("name" -> "title")
         .add("one" -> 1)
-        .add("title" -> name)
     }
 
   val evolution2 =
     Evolution(2) { doc =>
-      val twoValue = doc.getAs[Int]("one").get + 1
+      val oneValue = doc[Int]("one")
+      val twoValue = oneValue + 1
       doc.add("two" -> twoValue)
     }
 }
