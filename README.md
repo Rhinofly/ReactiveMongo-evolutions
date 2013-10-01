@@ -14,6 +14,8 @@ Installation
   
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
     resolvers += "Rhinofly Internal Repository" at "http://maven-repository.rhinofly.net:8081/artifactory/libs-release-local"
+    // uncomment the following line to resolve snapshots
+    //,resolvers += "Rhinofly Internal Snapshot Repository" at "http://maven-repository.rhinofly.net:8081/artifactory/libs-shapshots-local"
   )
 ```
 
