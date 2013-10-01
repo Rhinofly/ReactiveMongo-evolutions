@@ -9,16 +9,30 @@ case class FormatterWithEvolution[T](
   to: T => BSONDocument,
   evolutions: Evolution*) extends BSONDocumentReader[T] with BSONDocumentWriter[T] {
 
+  val VERSION_KEY = "_version"
+
   val sortedEvolutions = evolutions.sortBy(_.version)
-  
-  val version =
-    if (evolutions.isEmpty) 0 else sortedEvolutions.last.version
+  val versions = sortedEvolutions.map(_.version)
+
+  val version = versions.lastOption.getOrElse(0)
+  val minimalVersion = versions.headOption.map(_ - 1).getOrElse(0)
 
   def read(doc: BSONDocument): T = from(evolve(doc))
-  def write(obj: T): BSONDocument = to(obj).add("_version" -> version)
+  def write(obj: T): BSONDocument = to(obj).add(VERSION_KEY -> version)
 
-  def evolve(doc: BSONDocument): BSONDocument =
-    sortedEvolutions.foldLeft(doc) {
+  def evolve(doc: BSONDocument): BSONDocument = {
+    val docVersion = doc.getAs[Int](VERSION_KEY).getOrElse(0)
+    val evolutionsToSkip = docVersion - minimalVersion
+    
+    if (evolutionsToSkip < 0) 
+      throw InvalidVersionException(doc, s"There is no evolution to evolve the document from version $docVersion to $minimalVersion")
+    
+    val evolutions = sortedEvolutions.drop(evolutionsToSkip)
+    
+    evolutions.foldLeft(doc) {
       (previous, evolution) => evolution.transform(previous)
     }
+  }
+  
+  case class InvalidVersionException(doc:BSONDocument, description:String) extends RuntimeException(description)
 }
