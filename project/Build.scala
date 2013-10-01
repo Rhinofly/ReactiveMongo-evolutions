@@ -15,7 +15,7 @@ object Build extends Build {
     version := libraryVersion,
     libraryDependencies ++= appDependencies,
     scalacOptions += "-feature",
-    organization := "play.modules.mailer",
+    organization := "nl.rhinofly",
     resolvers ++= Seq(
       rhinoflyRepo("RELEASE").get,
       "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
