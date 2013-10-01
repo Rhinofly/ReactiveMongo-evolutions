@@ -9,7 +9,7 @@ Installation
 
 ``` scala
   val appDependencies = Seq(
-    "nl.rhinofly" %% "ReactiveMongo-evolutions" % "1.0.0-SNAPSHOT"
+    "nl.rhinofly" %% "reactivemongo-evolutions" % "1.0.0-SNAPSHOT"
   )
   
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
