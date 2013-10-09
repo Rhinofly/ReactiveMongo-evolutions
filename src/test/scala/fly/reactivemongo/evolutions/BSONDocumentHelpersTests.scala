@@ -3,6 +3,9 @@ package fly.reactivemongo.evolutions
 import org.specs2.mutable.Specification
 import reactivemongo.bson.BSONDocument
 import reactivemongo.bson.exceptions.DocumentKeyNotFound
+import reactivemongo.bson.BSONDocumentReader
+import reactivemongo.bson.BSONDocumentWriter
+import BSONDocumentHelpers._
 
 object BSONDocumentHelpersTests extends Specification {
 
@@ -14,8 +17,6 @@ object BSONDocumentHelpersTests extends Specification {
   "BSONDocumentHelpers" should {
 
     "provide implicit enhancements for" >> {
-
-      import BSONDocumentHelpers._
 
       "removing keys" >> {
 
@@ -56,9 +57,23 @@ object BSONDocumentHelpersTests extends Specification {
             case DocumentKeyNotFound(key) => key === "two"
           }
         }
-        
+
         "when they they have an incorrect type, throw an Exception" in {
-        	doc1[String]("one") must throwA[ClassCastException]
+          doc1[String]("one") must throwA[ClassCastException]
+        }
+
+        "when accessing an object that is missing a key, throw the correct exception" in {
+
+          val doc = BSONDocument("one" -> BSONDocument())
+
+          case class Test(name: String)
+          implicit val bsonFormatter = new BSONDocumentReader[Test] {
+            def read(doc: BSONDocument) = Test(doc[String]("name"))
+          }
+
+          doc[Test]("one") must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "name"
+          }
         }
       }
     }
