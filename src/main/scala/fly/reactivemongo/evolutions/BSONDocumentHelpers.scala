@@ -34,9 +34,9 @@ object BSONDocumentHelpers {
 
     private def renameKeys(keys: (String, String)): Producer[(String, BSONValue)] = {
       val (oldKey, newKey) = keys
-      doc.get(oldKey)
+      doc.getTry(oldKey)
         .map(newKey -> _)
-        .getOrElse(throw DocumentKeyNotFound(oldKey))
+        .get
     }
 
     def apply[T](key: String)(implicit reader: BSONReader[_ <: BSONValue, T]): T =
