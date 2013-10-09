@@ -2,6 +2,7 @@ package fly.reactivemongo.evolutions
 
 import org.specs2.mutable.Specification
 import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.exceptions.DocumentKeyNotFound
 
 object BSONDocumentHelpersTests extends Specification {
 
@@ -35,11 +36,11 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they do not exist, throw an Exception" in {
-          doc1.rename("two" -> "three", "three" -> "four") must throwA[KeyNotFoundException].like {
-            case KeyNotFoundException(key) => key === "two"
+          doc1.rename("two" -> "three", "three" -> "four") must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "two"
           }
-          doc2.rename("two" -> "three", "three" -> "four") must throwA[KeyNotFoundException].like {
-            case KeyNotFoundException(key) => key === "three"
+          doc2.rename("two" -> "three", "three" -> "four") must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "three"
           }
         }
       }
@@ -51,9 +52,13 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they don't exist, throw an Exception" in {
-          doc1[Int]("two") must throwA[KeyNotFoundException].like {
-            case KeyNotFoundException(key) => key === "two"
+          doc1[Int]("two") must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "two"
           }
+        }
+        
+        "when they they have an incorrect type, throw an Exception" in {
+        	doc1[String]("one") must throwA[ClassCastException]
         }
       }
     }
