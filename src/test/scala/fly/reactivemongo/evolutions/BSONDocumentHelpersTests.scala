@@ -6,6 +6,7 @@ import reactivemongo.bson.exceptions.DocumentKeyNotFound
 import reactivemongo.bson.BSONDocumentReader
 import reactivemongo.bson.BSONDocumentWriter
 import BSONDocumentHelpers._
+import reactivemongo.bson.Producer
 
 object BSONDocumentHelpersTests extends Specification {
 
@@ -24,13 +25,14 @@ object BSONDocumentHelpersTests extends Specification {
           doc123.remove("two", "three") === doc1
         }
 
-        "when they don't exist" in {
-          doc1.remove("two", "three") === doc1
+        "when they don't exist, throw exception" in {
+          doc1.remove("two", "three") must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "two"
+          }
         }
       }
 
-      //NoSuchElementException
-      "renaming keys" in {
+      "renaming keys" >> {
 
         "when they exist" in {
           doc123.rename("two" -> "three", "three" -> "four") === doc134
@@ -46,7 +48,21 @@ object BSONDocumentHelpersTests extends Specification {
         }
       }
 
-      "easy access of required fields" in {
+      "updating keys" >> {
+
+        "when they exists" in {
+          doc123.update("one" -> 2, "two" -> 3, "three" -> 4) === BSONDocument("one" -> 2, "two" -> 3, "three" -> 4)
+        }
+
+        "when they do not exist, throw an exception" in {
+          doc1.update("two" -> 2, "three" -> 3) must throwA[DocumentKeyNotFound].like {
+            case DocumentKeyNotFound(key) => key === "two"
+          }
+        }
+
+      }
+
+      "easy access of required fields" >> {
 
         "when they exist" in {
           doc1[Int]("one") === 1

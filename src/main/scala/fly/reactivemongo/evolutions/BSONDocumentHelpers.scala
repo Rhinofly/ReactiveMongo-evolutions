@@ -13,6 +13,7 @@ object BSONDocumentHelpers {
   implicit class BSONDocumentEnhancements(doc: BSONDocument) {
 
     def remove(keys: String*): BSONDocument = {
+      checkExistence(keys)
       val filteredElements =
         doc.stream.filter {
           case Success((key, _)) if (keys contains key) => false
@@ -41,5 +42,13 @@ object BSONDocumentHelpers {
 
     def apply[T](key: String)(implicit reader: BSONReader[_ <: BSONValue, T]): T =
       doc.getAsTry[T](key).get
+      
+    def update[T](producers: Producer.NameOptionValueProducer *):BSONDocument = {
+      val keys = producers.map { case Producer.NameOptionValueProducer((key, _)) => key }
+      doc.remove(keys:_*).add(producers:_*)
+    }
+    
+    private def checkExistence(keys:Seq[String]):Unit =
+      keys.foreach(key => doc.getTry(key).get)
   }
 }
