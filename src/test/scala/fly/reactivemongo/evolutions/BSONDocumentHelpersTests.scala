@@ -7,6 +7,7 @@ import reactivemongo.bson.BSONDocumentReader
 import reactivemongo.bson.BSONDocumentWriter
 import BSONDocumentHelpers._
 import reactivemongo.bson.Producer
+import org.specs2.matcher.MatchResult
 
 object BSONDocumentHelpersTests extends Specification {
 
@@ -26,8 +27,11 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they don't exist, throw exception" in {
-          doc1.remove("two", "three") must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "two"
+          expectKeyNotFound("two") {
+            doc1.remove("two", "three")
+          }
+          expectKeyNotFound("three") {
+            doc2.remove("two", "three")
           }
         }
       }
@@ -39,11 +43,11 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they do not exist, throw an Exception" in {
-          doc1.rename("two" -> "three", "three" -> "four") must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "two"
+          expectKeyNotFound("two") {
+            doc1.rename("two" -> "three", "three" -> "four")
           }
-          doc2.rename("two" -> "three", "three" -> "four") must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "three"
+          expectKeyNotFound("three") {
+            doc2.rename("two" -> "three", "three" -> "four")
           }
         }
       }
@@ -55,11 +59,13 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they do not exist, throw an exception" in {
-          doc1.update("two" -> 2, "three" -> 3) must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "two"
+          expectKeyNotFound("two") {
+            doc1.update("two" -> 2, "three" -> 3)
+          }
+          expectKeyNotFound("three") {
+            doc2.update("two" -> 2, "three" -> 3)
           }
         }
-
       }
 
       "easy access of required fields" >> {
@@ -69,8 +75,8 @@ object BSONDocumentHelpersTests extends Specification {
         }
 
         "when they don't exist, throw an Exception" in {
-          doc1[Int]("two") must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "two"
+          expectKeyNotFound("two") {
+            doc1[Int]("two")
           }
         }
 
@@ -87,13 +93,18 @@ object BSONDocumentHelpersTests extends Specification {
             def read(doc: BSONDocument) = Test(doc[String]("name"))
           }
 
-          doc[Test]("one") must throwA[DocumentKeyNotFound].like {
-            case DocumentKeyNotFound(key) => key === "name"
+          expectKeyNotFound("name") {
+            doc[Test]("one")
           }
         }
       }
     }
   }
+
+  def expectKeyNotFound[T](expectedKey: String)(code: => T): MatchResult[T] =
+    code must throwA[DocumentKeyNotFound].like {
+      case DocumentKeyNotFound(key) => key === expectedKey
+    }
 
   val doc1 = BSONDocument("one" -> 1)
   val doc2 = BSONDocument("two" -> 2)
