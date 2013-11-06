@@ -119,6 +119,9 @@ val value =
   } catch {
     case KeyNotFoundException(key) => //...
   }
+  
+// update a value
+doc update ("key" -> newValue)
 ```
 
 More examples can be found in the `test` folder. 
