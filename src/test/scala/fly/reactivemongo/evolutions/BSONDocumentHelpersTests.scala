@@ -54,8 +54,9 @@ object BSONDocumentHelpersTests extends Specification {
 
       "updating keys" >> {
 
-        "when they exists" in {
-          doc123.update("one" -> 2, "two" -> 3, "three" -> 4) === BSONDocument("one" -> 2, "two" -> 3, "three" -> 4)
+        "when they exist" in {
+          doc123.update("one" -> 2, "two" -> 3, "three" -> 4) === 
+            BSONDocument("one" -> 2, "two" -> 3, "three" -> 4)
         }
 
         "when they do not exist, throw an exception" in {
@@ -68,6 +69,25 @@ object BSONDocumentHelpersTests extends Specification {
         }
       }
 
+      "updating keys with replacement function" >> {
+        
+        val addOne = {i:Int => i + 1}
+        
+        "when they exist" in {
+          doc123.update("one" -> addOne, "two" -> addOne, "three" -> addOne) === 
+            BSONDocument("one" -> 2, "two" -> 3, "three" -> 4)
+        }
+        
+        "when they do not exist, trow an exception" in {
+          expectKeyNotFound("two") {
+            doc1.update("two" -> addOne, "three" -> addOne)
+          }
+          expectKeyNotFound("three") {
+            doc2.update("two" -> addOne, "three" -> addOne)
+          }
+        }
+      }
+      
       "easy access of required fields" >> {
 
         "when they exist" in {

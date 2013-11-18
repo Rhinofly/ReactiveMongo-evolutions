@@ -9,7 +9,7 @@ Installation
 
 ``` scala
   val appDependencies = Seq(
-    "nl.rhinofly" %% "reactivemongo-evolutions" % "0.1"
+    "nl.rhinofly" %% "reactivemongo-evolutions" % "0.3"
   )
   
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
@@ -122,6 +122,9 @@ val value =
   
 // update a value
 doc update ("key" -> newValue)
+
+// update a value with a callback
+doc update ("key" -> {value:ValueType => newValue})
 ```
 
 More examples can be found in the `test` folder. 

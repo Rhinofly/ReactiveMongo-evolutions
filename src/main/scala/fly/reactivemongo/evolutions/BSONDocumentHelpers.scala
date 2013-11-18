@@ -7,6 +7,7 @@ import reactivemongo.bson.BSONReader
 import reactivemongo.bson.BSONValue
 import reactivemongo.bson.Producer
 import reactivemongo.bson.exceptions.DocumentKeyNotFound
+import reactivemongo.bson.BSONWriter
 
 object BSONDocumentHelpers {
 
@@ -30,7 +31,7 @@ object BSONDocumentHelpers {
 
       val renamedElements = keys.map(renameKeys)
 
-      withoutElements.add(renamedElements:_*)
+      withoutElements.add(renamedElements: _*)
     }
 
     private def renameKeys(keys: (String, String)): Producer[(String, BSONValue)] = {
@@ -42,13 +43,24 @@ object BSONDocumentHelpers {
 
     def apply[T](key: String)(implicit reader: BSONReader[_ <: BSONValue, T]): T =
       doc.getAsTry[T](key).get
-      
-    def update[T](producers: Producer.NameOptionValueProducer *):BSONDocument = {
+
+    def update(producers: Producer.NameOptionValueProducer*): BSONDocument = {
       val keys = producers.map { case Producer.NameOptionValueProducer((key, _)) => key }
-      doc.remove(keys:_*).add(producers:_*)
+      doc.remove(keys: _*).add(producers: _*)
     }
-    
-    private def checkExistence(keys:Seq[String]):Unit =
+
+    def update[A, B](updateMethods: (String, A => B)*)(implicit reader: BSONReader[_ <: BSONValue, A], writer: BSONWriter[B, _ <: BSONValue]): BSONDocument = {
+      val producers = updateMethods.map {
+        case (key, method) =>
+          val producer: Producer.NameOptionValueProducer =
+            key -> method(apply[A](key))
+          producer
+      }
+
+      update(producers: _*)
+    }
+
+    private def checkExistence(keys: Seq[String]): Unit =
       keys.foreach(key => doc.getTry(key).get)
   }
 }
